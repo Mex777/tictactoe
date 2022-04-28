@@ -1,13 +1,13 @@
-const board = () => {
+const Board = (() => {
   const table = new Array(3);
   let moves = 0;
   for (let i = 0; i < 3; ++i) {
-    table.push(new Array(3));
+    table[i] = new Array(3);
   }
 
-  const move = (row, col, val) => {
-    table[row][col] = val;
+  const move = (row, col) => {
     ++moves;
+    table[Number(row)][Number(col)] = (moves % 2 ? 'X' : 'O');
   };
 
   const checkRow = (ind) => {
@@ -61,6 +61,8 @@ const board = () => {
     return 0;
   };
 
+  const val = (row, col) => table[Number(row)][Number(col)];
+
   const reset = () => {
     for (let i = 0; i < 3; ++i) {
       for (let j = 0; j < 3; ++j) {
@@ -69,17 +71,39 @@ const board = () => {
     }
   };
 
-  return {move, checkFinished, reset};
-};
+  return {move, checkFinished, val, reset};
+})();
 
-const displayController = (() => {
+const DisplayController = (() => {
   const table = document.getElementById('table');
 
   const createTable = () => {
     for (let i = 0; i < 3; ++i) {
       for (let j = 0; j < 3; ++j) {
-
+        const currCell = createCell(i, j);
+        table.appendChild(currCell);
       }
     }
   };
+
+  const createCell = (row, column) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.id = row + '' + column;
+
+    cell.addEventListener('click', () => {
+      Board.move(row, column);
+      cell.textContent = Board.val(row, column);
+    });
+
+    return cell;
+  };
+
+  return {createTable};
 })();
+
+const Game = (() => {
+  DisplayController.createTable();
+})();
+
+
