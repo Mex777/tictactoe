@@ -74,7 +74,7 @@ const Board = (() => {
   const reset = () => {
     for (let i = 0; i < 3; ++i) {
       for (let j = 0; j < 3; ++j) {
-        table[i][j] = '';
+        table[i][j] = undefined;
       }
     }
   };
@@ -126,6 +126,9 @@ const DisplayController = (() => {
     status.innerHTML = '<h1>' + player.getName() + '\'s turn</h1>';
   };
 
+  const reset = document.getElementById('reset');
+  reset.addEventListener('click', () => Game.reset());
+
   return {createTable, update, winner, draw, turn};
 })();
 
@@ -167,7 +170,20 @@ const Game = (() => {
 
   const player = (move) => (move % 2 ? player1 : player2);
 
-  return {start, move};
+  const reset = () => {
+    Board.reset();
+    for (let i = 0; i < 3; ++i) {
+      for (let j = 0; j < 3; ++j) {
+        DisplayController.update(i, j);
+      }
+    }
+
+    finished = false;
+    currMove = 0;
+    DisplayController.turn(player(currMove + 1));
+  };
+
+  return {start, move, reset};
 })();
 
 const Player = (user) => {

@@ -1,15 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
 body {
+    font-family: 'Roboto';
+}
+
+.center {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Roboto';
 }
 
 .table {
     display: grid;
-    grid-template-columns: 101px 101px 101px;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .cell {
@@ -30,4 +33,15 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+#reset {
+    background-color: transparent;
+    padding: .5rem;
+}
+
+.reset {
+    width: 100%;
+    display: flex;
+    justify-content: end;
 }
