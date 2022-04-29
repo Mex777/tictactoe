@@ -1,13 +1,11 @@
 const Board = (() => {
   const table = new Array(3);
-  let moves = 0;
   for (let i = 0; i < 3; ++i) {
     table[i] = new Array(3);
   }
 
-  const move = (row, col) => {
-    ++moves;
-    table[Number(row)][Number(col)] = (moves % 2 ? 'X' : 'O');
+  const update = (row, col, val) => {
+    table[Number(row)][Number(col)] = val;
   };
 
   const checkRow = (ind) => {
@@ -16,7 +14,7 @@ const Board = (() => {
         return false;
       }
     }
-    return true;
+    return table[ind][0] != undefined;
   };
 
   const checkCol = (ind) => {
@@ -25,15 +23,17 @@ const Board = (() => {
         return false;
       }
     }
-    return true;
+    return table[0][ind] != undefined;
   };
 
   const checkPrimDiag = () => {
-    return (table[1][1] == table[2][2]) && (table[1][1] == table[0][0]);
+    return (table[1][1] == table[2][2]) && (table[1][1] == table[0][0]) &&
+        table[0][0] != undefined;
   };
 
   const checkSecDiag = () => {
-    return (table[0][2] == table[1][1]) && (table[1][1] == table[2][0]);
+    return (table[0][2] == table[1][1]) && (table[1][1] == table[2][0]) &&
+        table[0][2] != undefined;
   };
 
   const checkFinished = () => {
@@ -54,11 +54,19 @@ const Board = (() => {
       return table[0][2];
     }
 
-    if (moves == 9) {
-      return 'draw';
+    return 0;
+  };
+
+  const checkDraw = () => {
+    for (let i = 0; i < 3; ++i) {
+      for (let j = 0; j < 3; ++j) {
+        if (table[i][j] == undefined) {
+          return false;
+        }
+      }
     }
 
-    return 0;
+    return true;
   };
 
   const val = (row, col) => table[Number(row)][Number(col)];
@@ -71,7 +79,7 @@ const Board = (() => {
     }
   };
 
-  return {move, checkFinished, val, reset};
+  return {update, checkFinished, val, reset, checkDraw};
 })();
 
 const DisplayController = (() => {
@@ -88,22 +96,94 @@ const DisplayController = (() => {
 
   const createCell = (row, column) => {
     const cell = document.createElement('div');
-    cell.className = 'cell';
+    cell.className = 'cell unselectable';
     cell.id = row + '' + column;
 
     cell.addEventListener('click', () => {
-      Board.move(row, column);
-      cell.textContent = Board.val(row, column);
+      Game.move(row, column);
     });
 
     return cell;
   };
 
-  return {createTable};
+  const update = (row, column) => {
+    const cell = document.getElementById(row + '' + column);
+    cell.textContent = Board.val(row, column);
+  };
+
+  const winner = (player) => {
+    const status = document.getElementById('status');
+    status.innerHTML = '<h1>' + player.getName() + ' has won </h1>';
+  };
+
+  const draw = () => {
+    const status = document.getElementById('status');
+    status.innerHTML = '<h1>Draw</h1>';
+  };
+
+  const turn = (player) => {
+    const status = document.getElementById('status');
+    status.innerHTML = '<h1>' + player.getName() + '\'s turn</h1>';
+  };
+
+  return {createTable, update, winner, draw, turn};
 })();
 
 const Game = (() => {
-  DisplayController.createTable();
+  let currMove = 0;
+  let finished = false;
+
+  const start = () => {
+    DisplayController.turn(player(currMove + 1));
+    DisplayController.createTable();
+  };
+
+  const move = (row, column) => {
+    if (!finished &&
+        Board.val(row, column) != 'X' && Board.val(row, column) != 'O') {
+      ++currMove;
+      Board.update(row, column, letter(currMove));
+      DisplayController.update(row, column);
+      checkFinish();
+    }
+  };
+
+  const letter = (move) => (move % 2 ? 'X' : 'O');
+
+  const checkFinish = () => {
+    const status = Board.checkFinished();
+    const draw = Board.checkDraw();
+
+    if (!status && !draw) {
+      DisplayController.turn(player(currMove + 1));
+    } else if (status) {
+      DisplayController.winner(player(currMove));
+      finished = true;
+    } else {
+      DisplayController.draw();
+      finished = true;
+    }
+  };
+
+  const player = (move) => (move % 2 ? player1 : player2);
+
+  return {start, move};
 })();
 
+const Player = (user) => {
+  const name = user;
+  let wins = 0;
 
+  const getName = () => name;
+
+  const won = () => ++wins;
+
+  const getWins = () => wins;
+
+  return {getName, getWins, won};
+};
+
+const player1 = Player('John');
+const player2 = Player('George');
+
+Game.start();
